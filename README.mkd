@@ -1,0 +1,17 @@
+# Smart unzip
+
+Unzip a zip archive into A directory.
+
+ZIPファイルを解凍します。解凍時にZIPファイルのコア名と同名のフォルダを作成しそ
+の中へ解凍しますが、ZIP内のトップにディレクトリが1つしか無い場合はそのディレク
+トリを自動的にストリップし、解凍ディレクトリのトップにファイルが配置されるよう
+に振る舞います。
+
+## USAGE
+
+Example:
+
+    $ go build smart-unzip.go
+    $ smart-unzip foo.zip bar.zip
+    $ ls outdir
+    foo/     bar/
