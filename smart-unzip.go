@@ -43,6 +43,9 @@ func extractOne(outpath string, f *zip.File) {
 func extractAll(dir string, r *zip.ReadCloser) {
 	var wg sync.WaitGroup
 	for _, f := range r.File {
+		if f.Mode().IsDir() {
+			continue
+		}
 		wg.Add(1)
 		name := convertFileName(f.FileHeader.Name)
 		outpath := path.Join(dir, name)
