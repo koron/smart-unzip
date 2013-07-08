@@ -25,14 +25,14 @@ func convertFileName(fname string) string {
 func extractOne(outpath string, f *zip.File) {
 	rc, err := f.Open()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("can't open a zip entry:", err)
 		return
 	}
 	defer rc.Close()
 
 	w, err := os.Create(outpath)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("can't open a file to write:", err)
 		return
 	}
 	defer w.Close()
@@ -59,7 +59,7 @@ func smartUnzip(outdir string, zipname string) {
 	// Open reader.
 	r, err := zip.OpenReader(zipname)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("can't open a zip file:", err)
 		return
 	}
 	defer r.Close()
@@ -75,6 +75,8 @@ func smartUnzip(outdir string, zipname string) {
 		err = os.Rename(path.Join(dir, name), path.Join(outdir, name))
 		if err == nil {
 			os.Remove(dir)
+		} else {
+			fmt.Println("did't remove dir:", err)
 		}
 	}
 }
