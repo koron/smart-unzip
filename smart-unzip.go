@@ -8,12 +8,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"sync"
 )
 
 func getBaseDir(s string) string {
 	ext := path.Ext(s)
-	return s[0 : len(s)-len(ext)]
+	return strings.Trim(s[0 : len(s)-len(ext)], ".")
 }
 
 func convertFileName(fname string) string {
