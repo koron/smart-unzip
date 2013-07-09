@@ -15,3 +15,7 @@ Example:
     $ smart-unzip foo.zip bar.zip
     $ ls outdir
     foo/     bar/
+
+## Build Preparation
+
+    $ go get code.google.com/p/mahonia
