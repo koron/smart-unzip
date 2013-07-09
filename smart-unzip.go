@@ -8,13 +8,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 )
 
 func getBaseDir(s string) string {
 	ext := path.Ext(s)
-	return strings.Trim(s[0 : len(s)-len(ext)], ".")
+	return strings.Trim(s[0:len(s)-len(ext)], ".")
 }
 
 func convertFileName(fname string) string {
@@ -58,7 +59,57 @@ func extractAll(dir string, r *zip.ReadCloser) {
 	wg.Wait()
 }
 
-func smartUnzip(outdir string, zipname string) {
+func isMeaningful(name string) (retval bool) {
+	match, err := regexp.MatchString("^[0-9A-Za-z]{1,12}$", name)
+	if err != nil {
+		fmt.Println("Failed meaningful check:", err)
+		retval = true
+	} else if !match {
+		retval = true
+	}
+	return
+}
+
+func isNameMeaningful(name, other string) (retval bool) {
+	if isMeaningful(name) || !isMeaningful(other) {
+		retval = true
+	}
+	return
+}
+
+func moveContents(src, dst string) (err error) {
+	ls, err := ioutil.ReadDir(src)
+	if err != nil {
+		return
+	}
+	for _, f := range ls {
+		name := f.Name()
+		err = os.Rename(path.Join(src, name), path.Join(dst, name))
+		if err != nil {
+			break
+		}
+	}
+	return
+}
+
+func stripOneDir(target string) (err error) {
+	middle, name := path.Split(target)
+	root, midname := path.Split(path.Clean(middle))
+	if isNameMeaningful(name, midname) {
+		err = os.Rename(target, path.Join(root, name))
+		if err == nil {
+			os.Remove(middle)
+		}
+	} else {
+		err = moveContents(target, middle)
+		if err == nil {
+			os.Remove(target)
+		}
+	}
+	return
+}
+
+func smartUnzip(outdir, zipname string) {
 	// Open reader.
 	r, err := zip.OpenReader(zipname)
 	if err != nil {
@@ -75,10 +126,8 @@ func smartUnzip(outdir string, zipname string) {
 	ls, err := ioutil.ReadDir(dir)
 	if len(ls) == 1 && ls[0].IsDir() {
 		name := ls[0].Name()
-		err = os.Rename(path.Join(dir, name), path.Join(outdir, name))
-		if err == nil {
-			os.Remove(dir)
-		} else {
+		err = stripOneDir(path.Join(dir, name))
+		if err != nil {
 			fmt.Println("Did't remove dir:", err)
 		}
 	}
